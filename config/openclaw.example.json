@@ -1,0 +1,260 @@
+{
+  "meta": {
+    "lastTouchedVersion": "<VERSION>",
+    "lastTouchedAt": "<TIMESTAMP>"
+  },
+  "wizard": {
+    "lastRunAt": "<TIMESTAMP>",
+    "lastRunVersion": "<VERSION>",
+    "lastRunCommand": "doctor",
+    "lastRunMode": "local"
+  },
+  "auth": {
+    "profiles": {
+      "<PROFILE_ID>": {
+        "provider": "<PROVIDER>",
+        "mode": "api_key"
+      }
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "ppchat-openai": {
+        "baseUrl": "<OPENAI_COMPAT_BASE_URL>",
+        "apiKey": {
+          "source": "env",
+          "provider": "default",
+          "id": "<ENV_VAR:API_KEY>"
+        },
+        "api": "openai-responses",
+        "models": [
+          {
+            "id": "gpt-5.4",
+            "name": "GPT-5.4",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "contextWindow": 400000,
+            "maxTokens": 128000
+          },
+          {
+            "id": "gpt-5.3-codex",
+            "name": "GPT-5.3 Codex",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "contextWindow": 400000,
+            "maxTokens": 128000
+          }
+        ]
+      },
+      "minimax": {
+        "baseUrl": "<ANTHROPIC_COMPAT_BASE_URL>",
+        "api": "anthropic-messages",
+        "authHeader": true,
+        "models": [
+          {
+            "id": "<RESEARCH_MODEL>",
+            "name": "<RESEARCH_MODEL_NAME>",
+            "reasoning": true,
+            "input": ["text"],
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {},
+    "list": [
+      {
+        "id": "main",
+        "name": "<MAIN_AGENT_NAME>",
+        "workspace": "<MAIN_WORKSPACE>",
+        "model": "ppchat-openai/gpt-5.4"
+      },
+      {
+        "id": "deep-researcher",
+        "name": "<RESEARCH_AGENT_NAME>",
+        "workspace": "<RESEARCH_WORKSPACE>",
+        "model": "minimax/<RESEARCH_MODEL>"
+      },
+      {
+        "id": "code-dev",
+        "name": "<CODE_AGENT_NAME>",
+        "workspace": "<CODE_WORKSPACE>",
+        "model": "ppchat-openai/gpt-5.3-codex",
+        "skills": ["coding-agent"]
+      },
+      {
+        "id": "daily-ops-agent",
+        "name": "<DAILY_OPS_AGENT_NAME>",
+        "workspace": "<DAILY_OPS_WORKSPACE>",
+        "model": "ppchat-openai/gpt-5.4"
+      }
+    ]
+  },
+  "tools": {
+    "profile": "full",
+    "allow": [],
+    "deny": ["browser"],
+    "web": {
+      "search": {
+        "enabled": false,
+        "provider": "<SEARCH_PROVIDER>",
+        "apiKey": "<REDACTED>"
+      },
+      "fetch": {
+        "enabled": true
+      }
+    },
+    "sessions": {
+      "visibility": "all"
+    },
+    "agentToAgent": {
+      "enabled": true,
+      "allow": ["main", "deep-researcher", "code-dev", "daily-ops-agent"]
+    },
+    "sandbox": {
+      "tools": {
+        "allow": ["*"],
+        "deny": []
+      }
+    }
+  },
+  "bindings": [
+    {
+      "agentId": "main",
+      "match": {
+        "channel": "telegram",
+        "accountId": "main"
+      }
+    },
+    {
+      "agentId": "deep-researcher",
+      "match": {
+        "channel": "telegram",
+        "accountId": "deep-researcher"
+      }
+    },
+    {
+      "agentId": "code-dev",
+      "match": {
+        "channel": "telegram",
+        "accountId": "code-dev"
+      }
+    }
+  ],
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "session": {
+    "dmScope": "per-channel-peer",
+    "agentToAgent": {
+      "maxPingPongTurns": 5
+    },
+    "maintenance": {
+      "mode": "enforce",
+      "pruneAfter": "7d"
+    }
+  },
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "command-logger": {
+          "enabled": true
+        },
+        "session-memory": {
+          "enabled": true
+        }
+      }
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "pairing",
+      "groups": {
+        "<GROUP_CHAT_ID>": {
+          "requireMention": true,
+          "groupPolicy": "allowlist"
+        }
+      },
+      "groupPolicy": "allowlist",
+      "streaming": "partial",
+      "network": {
+        "autoSelectFamily": false,
+        "dnsResultOrder": "ipv4first"
+      },
+      "proxy": "<LOCAL_PROXY>",
+      "accounts": {
+        "main": {
+          "dmPolicy": "allowlist",
+          "botToken": "<REDACTED_BOT_TOKEN>",
+          "allowFrom": ["<AUTHORIZED_USER_ID>"],
+          "groupAllowFrom": ["<AUTHORIZED_USER_ID>"],
+          "groupPolicy": "allowlist",
+          "streaming": "partial"
+        },
+        "deep-researcher": {
+          "dmPolicy": "allowlist",
+          "botToken": "<REDACTED_BOT_TOKEN>",
+          "allowFrom": ["<AUTHORIZED_USER_ID>"],
+          "groupAllowFrom": ["<AUTHORIZED_USER_ID>"],
+          "groupPolicy": "allowlist",
+          "streaming": "partial"
+        },
+        "code-dev": {
+          "name": "<CODE_AGENT_NAME>",
+          "dmPolicy": "allowlist",
+          "botToken": "<REDACTED_BOT_TOKEN>",
+          "allowFrom": ["<AUTHORIZED_USER_ID>"],
+          "groupAllowFrom": ["<AUTHORIZED_USER_ID>"],
+          "groupPolicy": "allowlist",
+          "streaming": "partial"
+        }
+      },
+      "defaultAccount": "main"
+    }
+  },
+  "gateway": {
+    "port": 19633,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": {
+        "source": "env",
+        "provider": "default",
+        "id": "<ENV_VAR:OPENCLAW_GATEWAY_TOKEN>"
+      }
+    },
+    "tailscale": {
+      "mode": "serve",
+      "resetOnExit": false
+    },
+    "nodes": {
+      "denyCommands": [
+        "camera.snap",
+        "camera.clip",
+        "screen.record",
+        "contacts.add",
+        "calendar.add",
+        "reminders.add",
+        "sms.send"
+      ]
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "pnpm"
+    }
+  }
+}
