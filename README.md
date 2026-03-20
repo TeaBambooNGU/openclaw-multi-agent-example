@@ -5,6 +5,7 @@
 
 > 简单说：**main 负责 orchestration，specialists 负责 execution。**
 
+B站讲解视频link: https://www.bilibili.com/video/BV1nDw2zQEww/
 ---
 
 ## Why this exists
